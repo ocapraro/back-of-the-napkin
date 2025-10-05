@@ -10,4 +10,20 @@
   height: 850px;
   box-shadow: 0 0 80px 80px var(--background-color) inset;
   background-image: url('./assets/napkin.png');
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#excalidraw-wrapper {
+  height: 580px;
+  width: 580px;
+  padding: 10px; 
+  display: flex; 
+  overflow: hidden; 
+  margin-top: -20px;
+  margin-left: 8px;
+  align-items: center;
+  justify-content: center;
+  /* background-color: #f005; */
 }
