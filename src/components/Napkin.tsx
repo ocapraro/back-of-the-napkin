@@ -1,10 +1,29 @@
+import { useRef, useState, useEffect } from "react";
 import "./napkin.css";
+import CanvasUtils from "./CanvasUtils";
 
 export default function Napkin() {
-  // rgba(33, 125, 255, 0.231)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [canvasUtils, setCanvasUtils] = useState<CanvasUtils | null>(null);
+  
+  useEffect(() => {
+    if (canvasRef.current) {
+      setCanvasUtils(new CanvasUtils(canvasRef));
+    }
+  }, [canvasRef]);
   return (
     <div id='napkin-image'>
-      <canvas>
+      <canvas 
+        ref={canvasRef} 
+        width={570} 
+        height={565}
+        onMouseOver={e=>{
+          canvasUtils?.drawCreationRect(e);
+        }} 
+        onMouseLeave={()=>{
+          canvasUtils?.render();
+        }}
+      >
       </canvas>
     </div>
   )

@@ -9,9 +9,8 @@
 }
 
 #napkin-image canvas {
-  height: 545px;
-  width: 550px;
-  padding: 10px; 
+  height: 565px;
+  width: 570px;
   display: flex; 
   overflow: hidden; 
   margin-top: -25px;
