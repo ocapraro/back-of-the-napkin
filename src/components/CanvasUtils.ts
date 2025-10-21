@@ -64,7 +64,32 @@ export default class CanvasUtils {
   }
 
   private detectCollisions(location:number) {
-    return [...this.elements];
+    const vals = {
+      collisions:[] as CanvasElement[],
+      theRest:[] as CanvasElement[]
+    };
+    [...this.elements].forEach(e=>{
+      const start = this.getLocation(e.x,e.y);
+      const end = this.getLocation(e.x+e.width,e.y+e.height);
+      let locations = [start,end];
+      let [i,j] = [start%3,end%3];
+      let[ii,jj] = [Math.floor(start/3)*3,Math.floor(end/3)*3]
+      if(ii!=jj)
+        while (i<end%3) {
+          i++;
+          locations.push(i+ii);
+        }
+      while (j>start%3) {
+        j--;
+        locations.push(j+jj);
+      }
+      console.log(start,end,locations,location);
+      if(locations.includes(location))
+        vals.collisions.push(e);
+      else
+        vals.theRest.push(e);
+    });
+    return vals;
   }
 
   private squishElements(location:number, elements:CanvasElement[]) {
@@ -120,8 +145,8 @@ export default class CanvasUtils {
       return;
     const [x,y] = this.getXY(e);
     const loc = this.getLocation(x,y);
-    const collisions = this.detectCollisions(loc);
-    this.render(this.squishElements(loc,collisions));
+    const {collisions,theRest} = this.detectCollisions(loc);
+    this.render([...this.squishElements(loc,collisions), ...theRest]);
 
     let [newX,newY,newWidth,newHeight] = [0,0,this.canvas.width,this.canvas.height];
     if(collisions.length)
@@ -153,7 +178,7 @@ export default class CanvasUtils {
       }
     this.drawRect("rgba(33, 125, 255, 0.231)", newHeight, newWidth, newX, newY);
     this.canvas.onclick = () => {
-      this.elements = this.squishElements(loc,collisions);
+      this.elements = [...this.squishElements(loc,collisions), ...theRest];
       this.elements.push({
         x:Math.max(newX,4),
         y:Math.max(newY,4),
