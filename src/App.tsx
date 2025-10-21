@@ -1,11 +1,10 @@
 import './App.css'
+import Napkin from './components/Napkin'
 
 function App() {
   return (
     <div className="App">
-      <div id='napkin-image'>
-        
-      </div>
+      <Napkin />
     </div>
   )
 }

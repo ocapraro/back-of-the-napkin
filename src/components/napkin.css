@@ -1,0 +1,24 @@
+#napkin-image {
+  width: 850px;
+  height: 850px;
+  box-shadow: 0 0 80px 80px var(--background-color) inset;
+  background-image: url('../assets/napkin.png');
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#napkin-image canvas {
+  height: 545px;
+  width: 550px;
+  padding: 10px; 
+  display: flex; 
+  overflow: hidden; 
+  margin-top: -25px;
+  margin-left: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .1s ease-in-out;
+  border-radius: 5px;
+}
