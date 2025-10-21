@@ -6,6 +6,7 @@ export type CanvasElement = {
 };
 
 const PADDING = 8;
+const DIMENSIONS = 3;
 
 
 export default class CanvasUtils {
@@ -43,10 +44,10 @@ export default class CanvasUtils {
     if(!(this.ctx&&this.canvas))
       return;
     this.ctx.fillStyle = "rgba(33, 125, 255, 0.231)";
-    const startingX = this.canvas.width*(startLoc%3)/3+PADDING;
-    const startingY = this.canvas.height*(Math.floor(startLoc/3))/(3)+PADDING;
-    const width = this.canvas.width*(1+(endLoc%3))/3 -PADDING-startingX;
-    const height = this.canvas.height*(1+Math.floor(endLoc/3))/3 -PADDING-startingY;
+    const startingX = this.canvas.width*(startLoc%DIMENSIONS)/DIMENSIONS+PADDING;
+    const startingY = this.canvas.height*(Math.floor(startLoc/DIMENSIONS))/(DIMENSIONS)+PADDING;
+    const width = this.canvas.width*(1+(endLoc%DIMENSIONS))/DIMENSIONS -PADDING-startingX;
+    const height = this.canvas.height*(1+Math.floor(endLoc/DIMENSIONS))/DIMENSIONS -PADDING-startingY;
     this.ctx.fillRect(
       startingX, 
       startingY,
@@ -59,10 +60,10 @@ export default class CanvasUtils {
     if(!(this.ctx&&this.canvas))
       return;
     this.ctx.strokeStyle = "black";
-    const startingX = this.canvas.width*(startLoc%3)/3+PADDING;
-    const startingY = this.canvas.height*(Math.floor(startLoc/3))/(3)+PADDING;
-    const width = this.canvas.width*(1+(endLoc%3))/3 -PADDING-startingX;
-    const height = this.canvas.height*(1+Math.floor(endLoc/3))/3 -PADDING-startingY;
+    const startingX = this.canvas.width*(startLoc%DIMENSIONS)/DIMENSIONS+PADDING;
+    const startingY = this.canvas.height*(Math.floor(startLoc/DIMENSIONS))/(DIMENSIONS)+PADDING;
+    const width = this.canvas.width*(1+(endLoc%DIMENSIONS))/DIMENSIONS -PADDING-startingX;
+    const height = this.canvas.height*(1+Math.floor(endLoc/DIMENSIONS))/DIMENSIONS -PADDING-startingY;
     this.ctx.strokeRect(
       startingX, 
       startingY,
@@ -79,16 +80,16 @@ export default class CanvasUtils {
 
   private getLocation(x:number,y:number) {
     if(!(this.ctx&&this.canvas))
-      return 4;
-    return Math.max(0,Math.ceil(x/this.canvas.width*3)+3*(Math.ceil(y/this.canvas.height*3)-1)-1);
+      return DIMENSIONS+1;
+    return Math.max(0,Math.ceil(x/this.canvas.width*DIMENSIONS)+DIMENSIONS*(Math.ceil(y/this.canvas.height*DIMENSIONS)-1)-1);
   }
 
   private generateMatrix(start:number, end:number) {
     let matrix = [start];
     let i = start;
     while(i<end) {
-      if(i%3>=end%3)
-        i = (Math.floor(i/3)+1)*3+(start%3);
+      if(i%DIMENSIONS>=end%DIMENSIONS)
+        i = (Math.floor(i/DIMENSIONS)+1)*DIMENSIONS+(start%DIMENSIONS);
       else
         i++;
       matrix.push(i);
@@ -116,43 +117,35 @@ export default class CanvasUtils {
     elements.forEach(elem=>{
       if(!(this.ctx&&this.canvas))
         return;
-      switch (location) {
-        case 0:
-        case 1:
-        case 2:
-          newElements.push({
-            ...elem, 
-            start:(1+Math.floor(elem.start/3))*3 + (elem.start%3)
-          });
-          break;
-        
-        case 3:
-          newElements.push({
-            ...elem, 
-            start:elem.start+1
-          });
-          break;
-        
-        case 5:
-          newElements.push({
-            ...elem, 
-            end:elem.end -1
-          });
-          break;
-        
-        case 6:
-        case 7:
-        case 8:
-          newElements.push({
-            ...elem, 
-            end:(Math.floor(elem.end/3)-1)*3 + (elem.end%3)
-          });
-          break;
+      const matrix = this.generateMatrix(elem.start, elem.end);
+      const max = Math.max(...matrix);
+      const min = Math.min(...matrix);
 
-        default:
-          newElements.push({...elem});
-          break;
+      // Handle x edges
+      if(location%DIMENSIONS==max%DIMENSIONS || location%DIMENSIONS == min%DIMENSIONS) {
+        const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS!=location%DIMENSIONS);
+        if(edgeMatrix.length>0){
+          newElements.push({
+            start:Math.min(...edgeMatrix),
+            end:Math.max(...edgeMatrix)
+          });
+          return;
+        }
       }
+
+      // Handle y edges
+      if(Math.floor(location/DIMENSIONS) == Math.floor(min/DIMENSIONS) || Math.floor(location/DIMENSIONS) == Math.floor(max/DIMENSIONS)){
+        const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)!=Math.floor(location/DIMENSIONS));
+        if(edgeMatrix.length>0){
+          newElements.push({
+            start:Math.min(...edgeMatrix),
+            end:Math.max(...edgeMatrix)
+          });
+          return;
+        }
+      }
+
+      newElements.push({...elem});
     });
     return newElements;
   }
@@ -160,50 +153,32 @@ export default class CanvasUtils {
   private boxExpansion(loc:number, elems:CanvasElement[]) {
     let holoMatrix = [loc];
     // Check adjacents
-    if(((loc%3)-1)>=0 && this.detectCollisions(loc-1,elems).collisions.length<1){
-      holoMatrix.push(loc-1);
-    }
-    if(((loc%3)+1)<=2 && this.detectCollisions(loc+1,elems).collisions.length<1){
-      holoMatrix.push(loc+1);
-    }
-    if(((loc%3)-2)>=0 && this.detectCollisions(loc-2,elems).collisions.length<1){
-      holoMatrix.push(loc-2);
-    }
-    if(((loc%3)+2)<=2 && this.detectCollisions(loc+2,elems).collisions.length<1){
-      holoMatrix.push(loc+2);
+    for (let i = 1; i < DIMENSIONS; i++) {
+      if(((loc%DIMENSIONS)-i)>=0 && this.detectCollisions(loc-i,elems).collisions.length<1){
+      holoMatrix.push(loc-i);
+      }
+      if(((loc%DIMENSIONS)+i)<=2 && this.detectCollisions(loc+i,elems).collisions.length<1){
+        holoMatrix.push(loc+i);
+      }
     }
 
     // Check above & below
-    const rowAbove1 = Math.floor(loc/3)+1;
-    const above1 = holoMatrix.map(l=>3*rowAbove1+l%3);
-    const rowBelow1 = Math.floor(loc/3)-1;
-    const below1 = holoMatrix.map(l=>3*rowBelow1+l%3);
-    const rowAbove2 = Math.floor(loc/3)+2;
-    const above2 = holoMatrix.map(l=>3*rowAbove2+l%3);
-    const rowBelow2 = Math.floor(loc/3)-2;
-    const below2 = holoMatrix.map(l=>3*rowBelow2+l%3);
-
-    if(rowAbove1<=2){
-      if(above1.reduce((a,b)=>a&&(this.detectCollisions(b,elems).collisions.length<1),true)){
-        holoMatrix = holoMatrix.concat(above1);
+    for (let i = 1; i < DIMENSIONS; i++) {
+      const rowAbove = Math.floor(loc/DIMENSIONS)+i;
+      const above = holoMatrix.map(l=>DIMENSIONS*rowAbove+l%DIMENSIONS);
+      const rowBelow = Math.floor(loc/DIMENSIONS)-i;
+      const below = holoMatrix.map(l=>DIMENSIONS*rowBelow+l%DIMENSIONS);
+      if(rowAbove<DIMENSIONS){
+        if(above.reduce((a,b)=>a&&(this.detectCollisions(b,elems).collisions.length<1),true)){
+          holoMatrix = holoMatrix.concat(above);
+        }
+      }
+      if(rowBelow>=0){
+        if(below.reduce((a,b)=>a&&(this.detectCollisions(b,elems).collisions.length<1),true)){
+          holoMatrix = holoMatrix.concat(below);
+        }
       }
     }
-    if(rowBelow1>=0){
-      if(below1.reduce((a,b)=>a&&(this.detectCollisions(b,elems).collisions.length<1),true)){
-        holoMatrix = holoMatrix.concat(below1);
-      }
-    }
-    if(rowAbove2<=2){
-      if(above2.reduce((a,b)=>a&&(this.detectCollisions(b,elems).collisions.length<1),true)){
-        holoMatrix = holoMatrix.concat(above2);
-      }
-    }
-    if(rowBelow2>=0){
-      if(below2.reduce((a,b)=>a&&(this.detectCollisions(b,elems).collisions.length<1),true)){
-        holoMatrix = holoMatrix.concat(below2);
-      }
-    }
-
     return holoMatrix;
   }
 
