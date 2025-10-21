@@ -28,12 +28,12 @@ export default class CanvasUtils {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  render () {
+  render (elems = this.elements) {
     if(!(this.ctx&&this.canvas))
       return;
     this.clear();
     this.ctx.strokeStyle = "black";
-    this.elements.forEach(elem=>{
+    elems.forEach(elem=>{
       if(!(this.ctx&&this.canvas))
         return;
       this.ctx?.strokeRect(elem.x,elem.y,elem.width, elem.height);
@@ -51,9 +51,77 @@ export default class CanvasUtils {
     this.ctx.fillRect(x, y, width, height);
   }
 
-  drawCreationRect(_:React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+  private getXY(e:React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    if(!(this.ctx&&this.canvas))
+      return [0,0];
+    return [e.clientX-this.canvas.offsetLeft, e.clientY-this.canvas.offsetTop];
+  }
+
+  private getLocation(x:number,y:number) {
+    if(!(this.ctx&&this.canvas))
+      return 4;
+    return Math.max(0,Math.ceil(x/this.canvas.width*3)+3*(Math.ceil(y/this.canvas.height*3)-1)-1);
+  }
+
+  private detectCollisions(location:number) {
+    return [...this.elements];
+  }
+
+  private squishElements(location:number, elements:CanvasElement[]) {
+    const newElements:CanvasElement[] = [];
+    elements.forEach(elem=>{
+      if(!(this.ctx&&this.canvas))
+        return;
+      switch (location) {
+        case 0:
+        case 1:
+        case 2:
+          newElements.push({
+            ...elem, 
+            y:this.canvas.height/3,
+            height:elem.height-this.canvas.height/3
+          });
+          break;
+        
+        case 3:
+          newElements.push({
+            ...elem, 
+            x:this.canvas.width/3,
+            width:elem.width-this.canvas.width/3
+          });
+          break;
+        
+        case 5:
+          newElements.push({
+            ...elem, 
+            width:elem.width-this.canvas.width/3
+          });
+          break;
+        
+        case 6:
+        case 7:
+        case 8:
+          newElements.push({
+            ...elem, 
+            height:elem.height-this.canvas.height/3
+          });
+          break;
+
+        default:
+          newElements.push({...elem});
+          break;
+      }
+    });
+    return newElements;
+  }
+
+  drawCreationRect(e:React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     if(!(this.ctx&&this.canvas))
       return;
+    const [x,y] = this.getXY(e);
+    const loc = this.getLocation(x,y);
+    const collisions = this.detectCollisions(loc);
+    this.render(this.squishElements(loc,collisions));
     this.drawRect("rgba(33, 125, 255, 0.231)","full","full");
     this.canvas.onclick = () => {
       this.elements.push({

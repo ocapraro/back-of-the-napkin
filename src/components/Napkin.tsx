@@ -17,7 +17,7 @@ export default function Napkin() {
         ref={canvasRef} 
         width={570} 
         height={565}
-        onMouseOver={e=>{
+        onMouseMove={e=>{
           canvasUtils?.drawCreationRect(e);
         }} 
         onMouseLeave={()=>{
