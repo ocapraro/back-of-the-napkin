@@ -122,13 +122,43 @@ export default class CanvasUtils {
     const loc = this.getLocation(x,y);
     const collisions = this.detectCollisions(loc);
     this.render(this.squishElements(loc,collisions));
-    this.drawRect("rgba(33, 125, 255, 0.231)","full","full");
+
+    let [newX,newY,newWidth,newHeight] = [0,0,this.canvas.width,this.canvas.height];
+    if(collisions.length)
+      switch (loc) {
+        case 0:
+        case 1:
+        case 2:
+          newHeight = this.canvas.height/3;
+          break;
+        
+        case 3:
+          newWidth = this.canvas.width/3;
+          break;
+        
+        case 5:
+          newX = this.canvas.width*2/3
+          newWidth = this.canvas.width/3;
+          break;
+        
+        case 6:
+        case 7:
+        case 8:
+          newY = this.canvas.height*2/3
+          newHeight = this.canvas.height/3;
+          break;
+
+        default:
+          break;
+      }
+    this.drawRect("rgba(33, 125, 255, 0.231)", newHeight, newWidth, newX, newY);
     this.canvas.onclick = () => {
+      this.elements = this.squishElements(loc,collisions);
       this.elements.push({
-        x:4,
-        y:4,
-        width:(this.canvas?.width||8)-8,
-        height:(this.canvas?.height||8)-8
+        x:Math.max(newX,4),
+        y:Math.max(newY,4),
+        width:Math.min(newWidth,(this.canvas?.width||8)-8),
+        height:Math.min(newHeight,(this.canvas?.height||8)-8)
       });
       this.render();
     };
