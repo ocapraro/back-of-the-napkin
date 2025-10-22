@@ -5,8 +5,8 @@ export type CanvasElement = {
   end:number
 };
 
-const PADDING = 8;
-const DIMENSIONS = 5;
+const PADDING = 2;
+const DIMENSIONS = 10;
 
 
 export default class CanvasUtils {
@@ -121,27 +121,51 @@ export default class CanvasUtils {
       const max = Math.max(...matrix);
       const min = Math.min(...matrix);
 
-      // Handle x edges
-      if(location%DIMENSIONS==max%DIMENSIONS || location%DIMENSIONS == min%DIMENSIONS) {
-        const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS!=location%DIMENSIONS);
-        if(edgeMatrix.length>0){
-          newElements.push({
-            start:Math.min(...edgeMatrix),
-            end:Math.max(...edgeMatrix)
-          });
-          return;
+      // Handle inside
+      for (let i = 0; i < DIMENSIONS; i++) {
+        // X cells
+        if(location%DIMENSIONS+i == max%DIMENSIONS) {
+          const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS<location%DIMENSIONS);
+          if(edgeMatrix.length>0){
+            newElements.push({
+              start:Math.min(...edgeMatrix),
+              end:Math.max(...edgeMatrix)
+            });
+            return;
+          }
         }
-      }
+        if(location%DIMENSIONS-i == min%DIMENSIONS) {
+          const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS>location%DIMENSIONS);
+          if(edgeMatrix.length>0){
+            newElements.push({
+              start:Math.min(...edgeMatrix),
+              end:Math.max(...edgeMatrix)
+            });
+            return;
+          }
+        }
 
-      // Handle y edges
-      if(Math.floor(location/DIMENSIONS) == Math.floor(min/DIMENSIONS) || Math.floor(location/DIMENSIONS) == Math.floor(max/DIMENSIONS)){
-        const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)!=Math.floor(location/DIMENSIONS));
-        if(edgeMatrix.length>0){
-          newElements.push({
-            start:Math.min(...edgeMatrix),
-            end:Math.max(...edgeMatrix)
-          });
-          return;
+        // Y cells
+        if(Math.floor(location/DIMENSIONS)-i == Math.floor(min/DIMENSIONS)){
+          const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)>Math.floor(location/DIMENSIONS));
+          if(edgeMatrix.length>0){
+            newElements.push({
+              start:Math.min(...edgeMatrix),
+              end:Math.max(...edgeMatrix)
+            });
+            return;
+          }
+        }
+
+        if(Math.floor(location/DIMENSIONS)+i == Math.floor(max/DIMENSIONS)){
+          const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)<Math.floor(location/DIMENSIONS));
+          if(edgeMatrix.length>0){
+            newElements.push({
+              start:Math.min(...edgeMatrix),
+              end:Math.max(...edgeMatrix)
+            });
+            return;
+          }
         }
       }
 
