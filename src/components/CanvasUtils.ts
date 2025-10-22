@@ -6,7 +6,7 @@ export type CanvasElement = {
 };
 
 const PADDING = 8;
-const DIMENSIONS = 3;
+const DIMENSIONS = 5;
 
 
 export default class CanvasUtils {
@@ -157,7 +157,7 @@ export default class CanvasUtils {
       if(((loc%DIMENSIONS)-i)>=0 && this.detectCollisions(loc-i,elems).collisions.length<1){
       holoMatrix.push(loc-i);
       }
-      if(((loc%DIMENSIONS)+i)<=2 && this.detectCollisions(loc+i,elems).collisions.length<1){
+      if(((loc%DIMENSIONS)+i)< DIMENSIONS && this.detectCollisions(loc+i,elems).collisions.length<1){
         holoMatrix.push(loc+i);
       }
     }
