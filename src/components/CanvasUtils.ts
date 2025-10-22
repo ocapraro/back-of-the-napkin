@@ -2,7 +2,8 @@ import type { RefObject } from "react";
 
 export type CanvasElement = {
   start:number,
-  end:number
+  end:number,
+  text?:string
 };
 
 const PADDING = 2;
@@ -36,7 +37,7 @@ export default class CanvasUtils {
     elems.forEach(elem=>{
       if(!(this.ctx&&this.canvas))
         return;
-      this.drawOutlinedRect(elem.start, elem.end);
+      this.drawOutlinedRect(elem.start, elem.end, elem.text);
     });
   }
 
@@ -56,7 +57,7 @@ export default class CanvasUtils {
     );
   }
 
-  drawOutlinedRect(startLoc:number, endLoc:number) {
+  drawOutlinedRect(startLoc:number, endLoc:number, text?:string) {
     if(!(this.ctx&&this.canvas))
       return;
     this.ctx.strokeStyle = "black";
@@ -70,6 +71,17 @@ export default class CanvasUtils {
       width, 
       height
     );
+    if (text) {
+      this.ctx.save();
+      this.ctx.fillStyle = "black";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+      this.ctx.font = "24px Virgil";
+      const centerX = startingX + width / 2;
+      const centerY = startingY + height / 2;
+      this.ctx.fillText(text, centerX, centerY);
+      this.ctx.restore();
+    }
   }
 
   private getXY(e:React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
@@ -127,7 +139,7 @@ export default class CanvasUtils {
         if(location%DIMENSIONS+i == max%DIMENSIONS) {
           const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS<location%DIMENSIONS);
           if(edgeMatrix.length>0){
-            newElements.push({
+            newElements.push({ ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
             });
@@ -137,7 +149,7 @@ export default class CanvasUtils {
         if(location%DIMENSIONS-i == min%DIMENSIONS) {
           const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS>location%DIMENSIONS);
           if(edgeMatrix.length>0){
-            newElements.push({
+            newElements.push({ ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
             });
@@ -149,7 +161,7 @@ export default class CanvasUtils {
         if(Math.floor(location/DIMENSIONS)-i == Math.floor(min/DIMENSIONS)){
           const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)>Math.floor(location/DIMENSIONS));
           if(edgeMatrix.length>0){
-            newElements.push({
+            newElements.push({ ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
             });
@@ -160,7 +172,7 @@ export default class CanvasUtils {
         if(Math.floor(location/DIMENSIONS)+i == Math.floor(max/DIMENSIONS)){
           const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)<Math.floor(location/DIMENSIONS));
           if(edgeMatrix.length>0){
-            newElements.push({
+            newElements.push({ ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
             });
@@ -225,5 +237,24 @@ export default class CanvasUtils {
       });
       this.render();
     };
+  }
+
+  drawSelectionRect(e:React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    if(!(this.ctx&&this.canvas))
+      return;
+    const [x,y] = this.getXY(e);
+    const loc = this.getLocation(x,y);
+    const {collisions, theRest} = this.detectCollisions(loc);
+    const selectedBox = collisions[0];
+    if(!selectedBox)
+      return;
+    this.elements = [...collisions, ...theRest];
+    this.render();
+    this.drawRect(selectedBox.start, selectedBox.end);
+    this.canvas.onclick = ()=>{
+      const text = prompt("Text:");
+      if(text)
+        selectedBox.text = text;
+    }
   }
 }
