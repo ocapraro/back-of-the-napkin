@@ -226,4 +226,20 @@ export default class CanvasUtils {
       this.render();
     };
   }
+
+  drawSelectionRect(e:React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    if(!(this.ctx&&this.canvas))
+      return;
+    const [x,y] = this.getXY(e);
+    const loc = this.getLocation(x,y);
+    const {collisions} = this.detectCollisions(loc);
+    const selectedBox = collisions[0];
+    if(!selectedBox)
+      return;
+    this.render();
+    this.drawRect(selectedBox.start, selectedBox.end);
+    this.canvas.onclick = ()=>{
+      
+    }
+  }
 }

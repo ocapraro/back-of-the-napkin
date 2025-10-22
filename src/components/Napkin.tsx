@@ -18,7 +18,11 @@ export default function Napkin() {
         width={570} 
         height={565}
         onMouseMove={e=>{
-          canvasUtils?.drawCreationRect(e);
+          const isShiftPressed = e.shiftKey;
+          if(!isShiftPressed)
+            canvasUtils?.drawCreationRect(e);
+          else
+            canvasUtils?.drawSelectionRect(e);
         }} 
         onMouseLeave={()=>{
           canvasUtils?.render();
