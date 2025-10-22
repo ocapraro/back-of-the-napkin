@@ -134,51 +134,57 @@ export default class CanvasUtils {
       const min = Math.min(...matrix);
 
       // Handle inside
+      let chosenElem = null;
+      let squaresEffected = 0;
       for (let i = 0; i < DIMENSIONS; i++) {
         // X cells
         if(location%DIMENSIONS+i == max%DIMENSIONS) {
           const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS<location%DIMENSIONS);
-          if(edgeMatrix.length>0){
-            newElements.push({ ...elem,
+          if(edgeMatrix.length>0 && squaresEffected<edgeMatrix.length){
+            chosenElem = { ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
-            });
-            return;
+            };
+            squaresEffected = edgeMatrix.length;
           }
         }
         if(location%DIMENSIONS-i == min%DIMENSIONS) {
           const edgeMatrix = matrix.filter(cell=>cell%DIMENSIONS>location%DIMENSIONS);
-          if(edgeMatrix.length>0){
-            newElements.push({ ...elem,
+          if(edgeMatrix.length>0 && squaresEffected<edgeMatrix.length){
+            chosenElem = { ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
-            });
-            return;
+            };
+            squaresEffected = edgeMatrix.length;
           }
         }
 
         // Y cells
         if(Math.floor(location/DIMENSIONS)-i == Math.floor(min/DIMENSIONS)){
           const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)>Math.floor(location/DIMENSIONS));
-          if(edgeMatrix.length>0){
-            newElements.push({ ...elem,
+          if(edgeMatrix.length>0 && squaresEffected<edgeMatrix.length){
+            chosenElem = { ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
-            });
-            return;
+            };
+            squaresEffected = edgeMatrix.length;
           }
         }
 
         if(Math.floor(location/DIMENSIONS)+i == Math.floor(max/DIMENSIONS)){
           const edgeMatrix = matrix.filter(cell=>Math.floor(cell/DIMENSIONS)<Math.floor(location/DIMENSIONS));
-          if(edgeMatrix.length>0){
-            newElements.push({ ...elem,
+          if(edgeMatrix.length>0 && squaresEffected<edgeMatrix.length){
+            chosenElem = { ...elem,
               start:Math.min(...edgeMatrix),
               end:Math.max(...edgeMatrix)
-            });
-            return;
+            };
+            squaresEffected = edgeMatrix.length;
           }
         }
+      }
+      if(chosenElem){
+        newElements.push(chosenElem);
+        return;
       }
 
       newElements.push({...elem});
