@@ -76,7 +76,7 @@ export default class CanvasUtils {
       this.ctx.fillStyle = "black";
       this.ctx.textAlign = "center";
       this.ctx.textBaseline = "middle";
-      this.ctx.font = "32px Virgil";
+      this.ctx.font = "24px Virgil";
       const centerX = startingX + width / 2;
       const centerY = startingY + height / 2;
       this.ctx.fillText(text, centerX, centerY);
@@ -244,16 +244,17 @@ export default class CanvasUtils {
       return;
     const [x,y] = this.getXY(e);
     const loc = this.getLocation(x,y);
-    const {collisions} = this.detectCollisions(loc);
+    const {collisions, theRest} = this.detectCollisions(loc);
     const selectedBox = collisions[0];
     if(!selectedBox)
       return;
+    this.elements = [...collisions, ...theRest];
     this.render();
     this.drawRect(selectedBox.start, selectedBox.end);
     this.canvas.onclick = ()=>{
-      const text = "Testing";
+      const text = prompt("Text:");
       if(text)
-        this.elements[0].text = text;
+        selectedBox.text = text;
     }
   }
 }
